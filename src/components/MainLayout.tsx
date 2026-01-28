@@ -1,10 +1,21 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Home, Compass, Play, Plus } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Home, Compass, Play, Plus, FileText, Video } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NotificationDropdown } from './NotificationDropdown';
 import { useAppStore } from '@/stores/appStore';
 import { UploadModal } from './UploadModal';
+import { Avatar } from './Avatar';
+import { useState } from 'react';
+
+// Current user (mock)
+const currentUser = {
+  id: 'me',
+  username: 'odnix_user',
+  displayName: 'You',
+  avatar: 'https://i.pravatar.cc/150?img=70',
+  isOnline: true,
+};
 
 const navItems = [
   { path: '/', icon: Home, label: 'Home' },
@@ -16,6 +27,7 @@ export function MainLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { openUploadModal } = useAppStore();
+  const [showUploadChoice, setShowUploadChoice] = useState(false);
   
   // Hide nav on chat screen
   const isFullScreen = location.pathname.startsWith('/chat/') || location.pathname === '/omzo';
@@ -31,7 +43,16 @@ export function MainLayout() {
         >
           <div className="flex items-center justify-between px-4 py-3 max-w-2xl mx-auto">
             <h1 className="text-2xl font-bold gradient-text">Odnix</h1>
-            <NotificationDropdown />
+            <div className="flex items-center gap-3">
+              <NotificationDropdown />
+              <button onClick={() => navigate('/profile/me')}>
+                <Avatar
+                  src={currentUser.avatar}
+                  alt={currentUser.username}
+                  size="sm"
+                />
+              </button>
+            </div>
           </div>
         </motion.header>
       )}
@@ -82,12 +103,45 @@ export function MainLayout() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => openUploadModal('scribe')}
+                onClick={() => setShowUploadChoice(!showUploadChoice)}
                 className="w-12 h-12 rounded-2xl flex items-center justify-center glow-primary transition-all"
                 style={{ background: 'var(--gradient-primary)' }}
               >
-                <Plus className="w-6 h-6 text-primary-foreground" />
+                <Plus className={cn("w-6 h-6 text-primary-foreground transition-transform", showUploadChoice && "rotate-45")} />
               </motion.button>
+              
+              {/* Upload choice popup */}
+              <AnimatePresence>
+                {showUploadChoice && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                    className="absolute bottom-16 right-0 glass-card rounded-xl p-2 min-w-[140px] border border-border/50"
+                  >
+                    <button
+                      onClick={() => {
+                        openUploadModal('scribe');
+                        setShowUploadChoice(false);
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
+                    >
+                      <FileText className="w-5 h-5 text-primary" />
+                      <span className="text-foreground font-medium">Scribe</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        openUploadModal('omzo');
+                        setShowUploadChoice(false);
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
+                    >
+                      <Video className="w-5 h-5 text-accent" />
+                      <span className="text-foreground font-medium">Omzo</span>
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </motion.nav>

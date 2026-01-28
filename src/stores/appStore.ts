@@ -2,11 +2,11 @@ import { create } from 'zustand';
 
 interface AppState {
   isUploadModalOpen: boolean;
-  uploadType: 'scribe' | 'omzo' | null;
+  uploadType: 'scribe' | 'omzo' | 'story' | null;
   activeTab: 'all' | 'private';
   notificationsOpen: boolean;
   
-  openUploadModal: (type: 'scribe' | 'omzo') => void;
+  openUploadModal: (type: 'scribe' | 'omzo' | 'story') => void;
   closeUploadModal: () => void;
   setActiveTab: (tab: 'all' | 'private') => void;
   toggleNotifications: () => void;

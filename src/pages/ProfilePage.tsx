@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Settings, Grid3X3, Play, Bookmark } from 'lucide-react';
+import { ArrowLeft, Settings, Grid3X3, Play, Bookmark, Edit2 } from 'lucide-react';
 import { Avatar } from '@/components/Avatar';
-import { mockUsers, mockScribes, mockOmzos } from '@/services/api';
+import { mockUsers, mockScribes, mockOmzos, currentUser } from '@/services/api';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useThemeStore, Theme } from '@/stores/themeStore';
@@ -23,7 +23,7 @@ export default function ProfilePage() {
   const [showSettings, setShowSettings] = useState(false);
   const { theme, setTheme } = useThemeStore();
 
-  const user = mockUsers.find(u => u.id === userId) || mockUsers[0];
+  const user = userId === 'me' ? currentUser : (mockUsers.find(u => u.id === userId) || mockUsers[1]);
   const userScribes = mockScribes.filter(s => s.user.id === userId);
   const userOmzos = mockOmzos.filter(o => o.user.id === userId);
 
@@ -115,12 +115,23 @@ export default function ProfilePage() {
         </div>
 
         <div className="flex gap-3 justify-center">
-          <button className="px-8 py-2.5 rounded-xl font-medium text-sm bg-primary text-primary-foreground glow-primary hover:opacity-90 transition-opacity">
-            Follow
-          </button>
-          <button className="px-8 py-2.5 rounded-xl font-medium text-sm bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors">
-            Message
-          </button>
+          {userId === 'me' ? (
+            <button 
+              onClick={() => setShowSettings(!showSettings)}
+              className="px-8 py-2.5 rounded-xl font-medium text-sm bg-primary text-primary-foreground glow-primary hover:opacity-90 transition-opacity"
+            >
+              Edit Profile
+            </button>
+          ) : (
+            <>
+              <button className="px-8 py-2.5 rounded-xl font-medium text-sm bg-primary text-primary-foreground glow-primary hover:opacity-90 transition-opacity">
+                Follow
+              </button>
+              <button className="px-8 py-2.5 rounded-xl font-medium text-sm bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors">
+                Message
+              </button>
+            </>
+          )}
         </div>
       </motion.div>
 

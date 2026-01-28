@@ -106,7 +106,7 @@ export default function ChatPage() {
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="glass-card border-t border-border/50 p-3 safe-bottom"
+        className="sticky bottom-0 glass-card border-t border-border/50 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
       >
         <div className="flex items-end gap-2">
           {/* Media button */}
