@@ -79,7 +79,18 @@ export interface Notification {
 }
 
 // Mock data generators
+// Current user (your profile)
+export const currentUser: User = {
+  id: 'me',
+  username: 'odnix_user',
+  displayName: 'You',
+  avatar: 'https://i.pravatar.cc/150?img=70',
+  isOnline: true,
+  isVerified: true,
+};
+
 export const mockUsers: User[] = [
+  currentUser,
   { id: '1', username: 'alex_tech', displayName: 'Alex Turner', avatar: 'https://i.pravatar.cc/150?img=1', isOnline: true, isVerified: true },
   { id: '2', username: 'sarah_designs', displayName: 'Sarah Chen', avatar: 'https://i.pravatar.cc/150?img=2', isOnline: true },
   { id: '3', username: 'mike_music', displayName: 'Mike Johnson', avatar: 'https://i.pravatar.cc/150?img=3', isOnline: false },

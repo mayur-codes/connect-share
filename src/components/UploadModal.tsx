@@ -36,7 +36,7 @@ export function UploadModal() {
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-border">
             <h2 className="text-lg font-semibold text-foreground">
-              {uploadType === 'scribe' ? 'New Scribe' : 'New Omzo'}
+              {uploadType === 'scribe' ? 'New Scribe' : uploadType === 'omzo' ? 'New Omzo' : 'New Story'}
             </h2>
             <button 
               onClick={closeUploadModal}
@@ -107,6 +107,25 @@ export function UploadModal() {
                 <textarea
                   placeholder="Write a caption..."
                   className="w-full h-24 bg-secondary rounded-xl p-4 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </>
+            )}
+
+            {uploadType === 'story' && (
+              <>
+                {/* Story upload area */}
+                <div className="border-2 border-dashed border-border rounded-xl p-8 text-center mb-4">
+                  <Image className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-foreground font-medium mb-1">Upload image or video</p>
+                  <p className="text-sm text-muted-foreground">
+                    Share a moment that disappears in 24 hours
+                  </p>
+                </div>
+
+                {/* Caption (optional) */}
+                <textarea
+                  placeholder="Add a caption (optional)..."
+                  className="w-full h-20 bg-secondary rounded-xl p-4 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </>
             )}
