@@ -93,6 +93,30 @@ export default function ChatPage() {
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4">
+        {/* New message request banner - shown inside chat for new requests */}
+        {chat.isNewRequest && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card rounded-xl p-4 mb-4"
+          >
+            <p className="text-sm text-muted-foreground mb-3 text-center">
+              This user wants to send you a message
+            </p>
+            <div className="flex gap-2">
+              <button className="flex-1 py-2.5 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:opacity-90 transition-opacity">
+                Accept
+              </button>
+              <button className="flex-1 py-2.5 bg-secondary text-secondary-foreground text-sm font-medium rounded-lg hover:bg-secondary/80 transition-colors">
+                Block
+              </button>
+              <button className="flex-1 py-2.5 bg-destructive/20 text-destructive text-sm font-medium rounded-lg hover:bg-destructive/30 transition-colors">
+                Report
+              </button>
+            </div>
+          </motion.div>
+        )}
+
         {mockMessages.map((msg) => (
           <MessageBubble
             key={msg.id}

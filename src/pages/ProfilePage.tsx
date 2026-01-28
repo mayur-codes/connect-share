@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Settings, Grid3X3, Play, Bookmark, Edit2 } from 'lucide-react';
+import { ArrowLeft, Settings, Grid3X3, Play, Bookmark } from 'lucide-react';
 import { Avatar } from '@/components/Avatar';
 import { mockUsers, mockScribes, mockOmzos, currentUser } from '@/services/api';
 import { useState } from 'react';
@@ -163,45 +163,66 @@ export default function ProfilePage() {
         ))}
       </div>
 
-      {/* Content Grid */}
-      <div className="grid grid-cols-3 gap-1 p-1">
-        {activeTab === 'scribes' && mockScribes.slice(0, 9).map((scribe, i) => (
-          <motion.div
-            key={scribe.id}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: i * 0.03 }}
-            className="aspect-square bg-secondary rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
-          >
-            {scribe.mediaUrl ? (
-              <img src={scribe.mediaUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center p-2">
-                <p className="text-xs text-muted-foreground line-clamp-4 text-center">
-                  {scribe.content}
-                </p>
-              </div>
-            )}
-          </motion.div>
-        ))}
+      {/* Content */}
+      <div className="p-4">
+        {activeTab === 'scribes' && (
+          <div className="space-y-4">
+            {mockScribes.slice(0, 9).map((scribe, i) => (
+              <motion.div
+                key={scribe.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="glass-card rounded-xl p-4"
+              >
+                <div className="flex items-start gap-3 mb-3">
+                  <Avatar src={scribe.user.avatar} alt={scribe.user.username} size="md" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground">{scribe.user.displayName}</p>
+                    <p className="text-sm text-muted-foreground">@{scribe.user.username}</p>
+                  </div>
+                </div>
+                {scribe.content && (
+                  <p className="text-foreground mb-3">{scribe.content}</p>
+                )}
+                {scribe.mediaUrl && (
+                  <img src={scribe.mediaUrl} alt="" className="w-full rounded-lg object-cover max-h-96" />
+                )}
+              </motion.div>
+            ))}
+          </div>
+        )}
 
-        {activeTab === 'omzos' && mockOmzos.map((omzo, i) => (
-          <motion.div
-            key={omzo.id}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: i * 0.03 }}
-            className="aspect-square bg-secondary rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity relative"
-          >
-            <video src={omzo.videoUrl} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Play className="w-8 h-8 text-white drop-shadow-lg" />
-            </div>
-          </motion.div>
-        ))}
+        {activeTab === 'omzos' && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {mockOmzos.map((omzo, i) => (
+              <motion.div
+                key={omzo.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.05 }}
+                className="aspect-[9/16] bg-secondary rounded-xl overflow-hidden cursor-pointer hover:opacity-80 transition-opacity relative group"
+              >
+                <video
+                  src={omzo.videoUrl}
+                  className="w-full h-full object-cover"
+                  muted
+                  playsInline
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute bottom-2 left-2 right-2">
+                  <span className="text-white text-xs font-medium">{omzo.caption}</span>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Play className="w-12 h-12 text-white drop-shadow-lg" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         {activeTab === 'saved' && (
-          <div className="col-span-3 py-12 text-center text-muted-foreground">
+          <div className="py-12 text-center text-muted-foreground">
             <Bookmark className="w-12 h-12 mx-auto mb-3 opacity-50" />
             <p>No saved items yet</p>
           </div>

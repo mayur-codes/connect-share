@@ -103,7 +103,10 @@ export function MainLayout() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setShowUploadChoice(!showUploadChoice)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowUploadChoice(prev => !prev);
+                }}
                 className="w-12 h-12 rounded-2xl flex items-center justify-center glow-primary transition-all"
                 style={{ background: 'var(--gradient-primary)' }}
               >
@@ -120,7 +123,8 @@ export function MainLayout() {
                     className="absolute bottom-16 right-0 glass-card rounded-xl p-2 min-w-[140px] border border-border/50"
                   >
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         openUploadModal('scribe');
                         setShowUploadChoice(false);
                       }}
@@ -130,7 +134,8 @@ export function MainLayout() {
                       <span className="text-foreground font-medium">Scribe</span>
                     </button>
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         openUploadModal('omzo');
                         setShowUploadChoice(false);
                       }}
