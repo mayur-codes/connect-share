@@ -13,6 +13,8 @@ const ChatPage = lazy(() => import("./pages/ChatPage"));
 const OmzoPage = lazy(() => import("./pages/OmzoPage"));
 const ExplorePage = lazy(() => import("./pages/ExplorePage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const SignupPage = lazy(() => import("./pages/SignupPage"));
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,8 @@ const App = () => (
       <BrowserRouter>
         <Suspense fallback={<PageLoader />}>
           <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
             <Route element={<MainLayout />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/explore" element={<ExplorePage />} />
