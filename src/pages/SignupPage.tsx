@@ -33,7 +33,13 @@ export default function SignupPage() {
     if (!parsed.success) { setError(parsed.error.issues[0].message); return; }
     setLoading(true);
     try {
-      await register(parsed.data);
+      await register({
+        username: form.username,
+        email: form.email,
+        password: form.password,
+        name: form.name,
+        lastname: form.lastname,
+      });
       setStage('otp');
       toast.success('OTP sent to ' + parsed.data.email);
     } catch (err: any) { setError(err?.message || 'Registration failed'); }
