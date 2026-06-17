@@ -1,201 +1,157 @@
-import { useState, useRef, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Compass, Play, Plus, FileText, Video, Flag, MoreVertical } from 'lucide-react';
+import { ArrowLeft, Home, Loader2 } from 'lucide-react';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { OmzoPlayer } from '@/components/OmzoPlayer';
 import { ShareModal } from '@/components/ShareModal';
-import { mockOmzos } from '@/services/api';
-import { cn } from '@/lib/utils';
-import { useAppStore } from '@/stores/appStore';
-import { AnimatePresence } from 'framer-motion';
+import * as omzoApi from '@/services/omzo';
+import type { Omzo } from '@/services/api';
 
-const navItems = [
-  { path: '/', icon: Home, label: 'Home' },
-  { path: '/explore', icon: Compass, label: 'Explore' },
-  { path: '/omzo', icon: Play, label: 'Omzo' },
-];
+function uuid() {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
+  return `s-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
 
 export default function OmzoPage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [activeIndex, setActiveIndex] = useState(0);
-  const [shareModalOpen, setShareModalOpen] = useState(false);
-  const [showReportMenu, setShowReportMenu] = useState(false);
-  const [showUploadChoice, setShowUploadChoice] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
-  const { openUploadModal } = useAppStore();
+  const sessionIdRef = useRef<string>(uuid());
+  const lastEventRef = useRef<{ id: string; t: number } | null>(null);
 
+  const feed = useInfiniteQuery({
+    queryKey: ['omzo-batch'],
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam }) => omzoApi.batch({
+      sessionId: sessionIdRef.current, cursor: pageParam, limit: 10, networkClass: 'wifi',
+    }),
+    getNextPageParam: (last) => (last.hasMore ? last.nextCursor : undefined),
+  });
+
+  const items: Omzo[] = useMemo(
+    () => (feed.data?.pages.flatMap((p) => p.items) ?? []).filter((o) => !hiddenIds.has(o.id) && !hiddenIds.has(`user:${o.user.id}`)),
+    [feed.data, hiddenIds]
+  );
+
+  // Track scroll position to determine active card.
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const scrollTop = container.scrollTop;
-      const height = container.clientHeight;
-      const newIndex = Math.round(scrollTop / height);
-      if (newIndex !== activeIndex && newIndex >= 0 && newIndex < mockOmzos.length) {
-        setActiveIndex(newIndex);
+    const el = containerRef.current; if (!el) return;
+    const onScroll = () => {
+      const idx = Math.round(el.scrollTop / el.clientHeight);
+      if (idx !== activeIndex && idx >= 0 && idx < items.length) {
+        // Send exit for previous item
+        const prev = items[activeIndex];
+        if (prev && lastEventRef.current) {
+          const watchMs = Math.min(Date.now() - lastEventRef.current.t, 120_000);
+          omzoApi.trackView({
+            omzoId: prev.id, impressionId: prev.impressionId, sessionId: sessionIdRef.current,
+            eventType: 'exit', watchMs, durationMs: prev.durationMs,
+          });
+        }
+        setActiveIndex(idx);
+        // visible for new
+        const cur = items[idx];
+        if (cur) {
+          omzoApi.trackView({
+            omzoId: cur.id, impressionId: cur.impressionId, sessionId: sessionIdRef.current,
+            eventType: 'visible', durationMs: cur.durationMs,
+          });
+          lastEventRef.current = { id: cur.id, t: Date.now() };
+        }
+        // Prefetch next page when nearing end
+        if (idx >= items.length - 3) feed.fetchNextPage();
       }
     };
+    el.addEventListener('scroll', onScroll);
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [activeIndex, items, feed]);
 
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [activeIndex]);
+  // Initial visible event
+  useEffect(() => {
+    if (items.length > 0 && !lastEventRef.current) {
+      const cur = items[0];
+      omzoApi.trackView({
+        omzoId: cur.id, impressionId: cur.impressionId, sessionId: sessionIdRef.current,
+        eventType: 'visible', durationMs: cur.durationMs,
+      });
+      lastEventRef.current = { id: cur.id, t: Date.now() };
+    }
+  }, [items]);
+
+  const handleNotInterested = (o: Omzo) => {
+    omzoApi.trackView({
+      omzoId: o.id, impressionId: o.impressionId, sessionId: sessionIdRef.current,
+      eventType: 'not_interested',
+    });
+    setHiddenIds((prev) => new Set(prev).add(o.id));
+  };
+  const handleHideCreator = (o: Omzo) => {
+    if (!window.confirm(`Hide all videos from @${o.user.username}?`)) return;
+    omzoApi.trackView({
+      omzoId: o.id, impressionId: o.impressionId, sessionId: sessionIdRef.current,
+      eventType: 'hide_creator',
+    });
+    setHiddenIds((prev) => new Set(prev).add(`user:${o.user.id}`));
+  };
+  const handleReport = (o: Omzo) => {
+    const reason = window.prompt('Report reason (spam/inappropriate/harassment/violence/hate_speech/false_info/copyright/other):', 'spam');
+    if (!reason) return;
+    omzoApi.reportOmzo(o.id, reason).catch(() => {});
+  };
 
   return (
-    <div className="fixed inset-0 bg-black flex flex-col">
-      {/* Report button - top right */}
-      <div className="absolute top-4 right-4 z-20 safe-top">
-        <div className="relative">
-          <motion.button
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setShowReportMenu(!showReportMenu)}
-            className="p-2 glass-button rounded-full"
-          >
-            <MoreVertical className="w-6 h-6 text-white" />
-          </motion.button>
-          
-          <AnimatePresence>
-            {showReportMenu && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="absolute top-12 right-0 glass-card rounded-xl p-2 min-w-[160px] border border-border/50"
-              >
-                <button
-                  onClick={() => {
-                    setShowReportMenu(false);
-                    // Handle copyright report
-                  }}
-                  className="flex items-center gap-3 w-full px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
-                >
-                  <Flag className="w-5 h-5 text-destructive" />
-                  <span className="text-white font-medium">Copyright</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setShowReportMenu(false);
-                    // Handle report
-                  }}
-                  className="flex items-center gap-3 w-full px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
-                >
-                  <Flag className="w-5 h-5 text-orange-500" />
-                  <span className="text-white font-medium">Report</span>
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+    <div className="fixed inset-0 bg-black">
+      <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between safe-top">
+        <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} whileTap={{ scale: 0.9 }}
+          onClick={() => navigate('/')} className="p-2 glass-button rounded-full">
+          <ArrowLeft className="w-6 h-6 text-white" />
+        </motion.button>
+        <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} whileTap={{ scale: 0.9 }}
+          onClick={() => navigate('/')} className="p-2 glass-button rounded-full">
+          <Home className="w-6 h-6 text-white" />
+        </motion.button>
       </div>
 
-      {/* Omzo Feed */}
-      <div
-        ref={containerRef}
-        className="flex-1 overflow-y-auto snap-y snap-mandatory hide-scrollbar pb-20"
-      >
-        {mockOmzos.map((omzo, index) => (
-          <div
-            key={omzo.id}
-            className="h-full snap-start snap-always"
-          >
+      {feed.isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center text-white">
+          <Loader2 className="w-6 h-6 animate-spin" />
+        </div>
+      )}
+      {feed.isError && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-white gap-3">
+          <p>Could not load Omzos</p>
+          <button onClick={() => feed.refetch()} className="px-4 py-2 bg-white/20 rounded-xl">Retry</button>
+        </div>
+      )}
+
+      <div ref={containerRef} className="h-full overflow-y-auto snap-y snap-mandatory hide-scrollbar">
+        {items.map((omzo, index) => (
+          <div key={omzo.id} className="h-full snap-start snap-always">
             <OmzoPlayer
               omzo={omzo}
               isActive={index === activeIndex}
-              onUserClick={() => navigate(`/profile/${omzo.user.id}`)}
+              onUserClick={() => navigate(`/profile/${omzo.user.username}`)}
+              onShare={() => {
+                setShareOpen(true);
+                omzoApi.trackView({
+                  omzoId: omzo.id, impressionId: omzo.impressionId, sessionId: sessionIdRef.current,
+                  eventType: 'share',
+                });
+              }}
+              onNotInterested={() => handleNotInterested(omzo)}
+              onHideCreator={() => handleHideCreator(omzo)}
+              onReport={() => handleReport(omzo)}
+              onLikeToggle={() => omzoApi.like(omzo.id).catch(() => {})}
             />
           </div>
         ))}
       </div>
 
-      {/* Bottom navigation */}
-      <motion.nav
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="fixed bottom-0 left-0 right-0 z-30 glass-card border-t border-border/50 safe-bottom"
-      >
-        <div className="flex items-center justify-around px-4 py-2 max-w-2xl mx-auto">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <motion.button
-                key={item.path}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => navigate(item.path)}
-                className={cn(
-                  'relative flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-colors',
-                  isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <item.icon className="w-6 h-6" />
-                <span className="text-xs font-medium">{item.label}</span>
-                {isActive && (
-                  <motion.div
-                    layoutId="omzo-nav-indicator"
-                    className="absolute -bottom-2 w-1 h-1 rounded-full bg-primary"
-                    style={{ boxShadow: '0 0 10px hsl(var(--primary))' }}
-                  />
-                )}
-              </motion.button>
-            );
-          })}
-          
-          {/* Upload button */}
-          <div className="relative">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowUploadChoice(!showUploadChoice)}
-              className="w-12 h-12 rounded-2xl flex items-center justify-center glow-primary transition-all"
-              style={{ background: 'var(--gradient-primary)' }}
-            >
-              <Plus className={cn("w-6 h-6 text-primary-foreground transition-transform", showUploadChoice && "rotate-45")} />
-            </motion.button>
-            
-            {/* Upload choice popup */}
-            <AnimatePresence>
-              {showUploadChoice && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                  className="absolute bottom-16 right-0 glass-card rounded-xl p-2 min-w-[140px] border border-border/50"
-                >
-                  <button
-                    onClick={() => {
-                      openUploadModal('scribe');
-                      setShowUploadChoice(false);
-                    }}
-                    className="flex items-center gap-3 w-full px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
-                  >
-                    <FileText className="w-5 h-5 text-primary" />
-                    <span className="text-foreground font-medium">Scribe</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      openUploadModal('omzo');
-                      setShowUploadChoice(false);
-                    }}
-                    className="flex items-center gap-3 w-full px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
-                  >
-                    <Video className="w-5 h-5 text-accent" />
-                    <span className="text-foreground font-medium">Omzo</span>
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-      </motion.nav>
-
-      {/* Share Modal */}
-      <ShareModal
-        isOpen={shareModalOpen}
-        onClose={() => setShareModalOpen(false)}
-        type="omzo"
-      />
+      <ShareModal isOpen={shareOpen} onClose={() => setShareOpen(false)} type="omzo"
+        contentId={items[activeIndex]?.id} />
     </div>
   );
 }
