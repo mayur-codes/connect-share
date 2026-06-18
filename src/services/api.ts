@@ -20,6 +20,13 @@ export interface Story {
   viewed: boolean;
 }
 
+export interface MessageReplyPreview {
+  id: string;
+  senderName: string;
+  content: string;
+  type: 'text' | 'image' | 'video' | 'file';
+}
+
 export interface Message {
   id: string;
   senderId: string; // 'me' for own messages, otherwise other user id
@@ -28,6 +35,9 @@ export interface Message {
   timestamp: Date;
   isOneTimeView?: boolean;
   viewed?: boolean;
+  replyTo?: MessageReplyPreview;
+  forwarded?: boolean;
+  forwardedFrom?: string;
 }
 
 export interface Chat {
