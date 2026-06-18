@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft, Phone, Video, Info, Image as ImageIcon, Share2, Send, Lock, Eye, Loader2,
+  ArrowLeft, Phone, Video, Info, Image as ImageIcon, Share2, Send, Lock, Eye, Loader2, X, CornerUpLeft,
 } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Avatar } from '@/components/Avatar';
@@ -22,6 +22,7 @@ export default function ChatPage() {
   const me = useAuthStore((s) => s.user);
   const [message, setMessage] = useState('');
   const [isOneTimeView, setIsOneTimeView] = useState(false);
+  const [replyTarget, setReplyTarget] = useState<Message | null>(null);
   const [liveMessages, setLiveMessages] = useState<Message[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -59,9 +60,10 @@ export default function ChatPage() {
   const sendMutation = useMutation({
     mutationFn: () => chatApi.sendMessage({
       chatId: chatId!, content: message.trim(), oneTime: isOneTimeView,
+      replyTo: replyTarget?.id,
     }),
     onSuccess: () => {
-      setMessage(''); setIsOneTimeView(false);
+      setMessage(''); setIsOneTimeView(false); setReplyTarget(null);
       queryClient.invalidateQueries({ queryKey: ['messages', chatId] });
     },
     onError: (err: any) => toast.error(err?.message || 'Failed to send'),
@@ -137,13 +139,36 @@ export default function ChatPage() {
         {messagesQuery.isError && (
           <p className="text-center text-destructive text-sm">Failed to load messages</p>
         )}
-        {messages.map((m) => <MessageBubble key={m.id} message={m} isOwn={m.senderId === 'me'} />)}
+        {messages.map((m) => (
+          <MessageBubble key={m.id} message={m} isOwn={m.senderId === 'me'} onReply={setReplyTarget} />
+        ))}
       </div>
 
       <motion.div
         initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
         className="glass-card border-t border-border/50 p-3 safe-bottom"
       >
+        {replyTarget && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 mb-2 px-3 py-2 rounded-xl bg-secondary/60 border-l-2 border-primary"
+          >
+            <CornerUpLeft className="w-4 h-4 text-primary flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-semibold text-primary">
+                Replying to {replyTarget.senderId === 'me' ? 'yourself' : (chat?.user.username ?? 'user')}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {replyTarget.type === 'text' ? replyTarget.content
+                  : replyTarget.type === 'image' ? 'Photo'
+                  : replyTarget.type === 'video' ? 'Video' : 'Attachment'}
+              </p>
+            </div>
+            <button onClick={() => setReplyTarget(null)} className="p-1 rounded-full hover:bg-secondary">
+              <X className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </motion.div>
+        )}
         <div className="flex items-end gap-2">
           <button className="p-2.5 hover:bg-secondary rounded-xl"><ImageIcon className="w-5 h-5 text-muted-foreground" /></button>
           <button className="p-2.5 hover:bg-secondary rounded-xl"><Share2 className="w-5 h-5 text-muted-foreground" /></button>

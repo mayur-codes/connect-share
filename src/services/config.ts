@@ -1,12 +1,16 @@
-// In dev, leave REST base empty so requests go to the Vite dev server origin
-// (e.g. http://127.0.0.1:8080/api/...) and get proxied to api.odnix.org.
-// In prod, use the configured absolute URL.
+// On local dev (127.0.0.1 / localhost) we use a relative base so the Vite
+// proxy forwards /api/* to api.odnix.org (avoids CORS in Firefox).
+// Anywhere else (Lovable preview, production) we hit api.odnix.org directly.
 const DEV = import.meta.env.DEV;
+const isLocalHost =
+  typeof window !== 'undefined' &&
+  /^(localhost|127\.0\.0\.1|0\.0\.0\.0)$/i.test(window.location.hostname);
 
-export const REST_BASE_URL = DEV
-  ? ''
-  : ((import.meta.env.VITE_REST_BASE_URL as string | undefined)?.replace(/\/+$/, '') ||
-     'https://api.odnix.org');
+const ABSOLUTE_API =
+  (import.meta.env.VITE_REST_BASE_URL as string | undefined)?.replace(/\/+$/, '') ||
+  'https://api.odnix.org';
+
+export const REST_BASE_URL = DEV && isLocalHost ? '' : ABSOLUTE_API;
 
 export const WS_BASE_URL =
   (import.meta.env.VITE_WS_BASE_URL as string | undefined)?.replace(/\/+$/, '') ||
