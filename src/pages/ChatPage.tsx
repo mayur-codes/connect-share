@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft, Phone, Video, Info, Image as ImageIcon, Share2, Send, Lock, Eye, Loader2,
+  ArrowLeft, Phone, Video, Info, Image as ImageIcon, Share2, Send, Lock, Eye, Loader2, X, CornerUpLeft,
 } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Avatar } from '@/components/Avatar';
