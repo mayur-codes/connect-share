@@ -71,6 +71,31 @@ export function normalizeMessage(raw: any, currentUserId?: string): Message {
     else type = 'file';
   }
   const isOwn = currentUserId ? senderId === currentUserId : false;
+
+  // Reply preview
+  const r = raw.reply_to ?? raw.replied_to ?? raw.parent_message;
+  let replyTo: Message['replyTo'] | undefined;
+  if (r) {
+    let rType: Message['type'] = 'text';
+    if (r.media_url || r.media) {
+      const m = (r.media_type || '').toLowerCase();
+      if (m.includes('video')) rType = 'video';
+      else if (m.includes('image')) rType = 'image';
+      else rType = 'file';
+    }
+    replyTo = {
+      id: String(r.id ?? r.message_id ?? ''),
+      senderName: r.sender?.username || r.sender_username || r.sender_name || 'User',
+      content: rType === 'text'
+        ? (r.content ?? r.text ?? '')
+        : resolveMedia(r.media_url ?? r.media ?? ''),
+      type: rType,
+    };
+  }
+
+  const forwarded = Boolean(raw.is_forwarded ?? raw.forwarded);
+  const forwardedFrom = raw.forwarded_from?.username || raw.forwarded_from_username || raw.original_sender?.username;
+
   return {
     id: String(raw.id ?? raw.message_id),
     senderId: isOwn ? 'me' : senderId,
@@ -81,6 +106,9 @@ export function normalizeMessage(raw: any, currentUserId?: string): Message {
     timestamp: parseDate(raw.created_at ?? raw.timestamp),
     isOneTimeView: Boolean(raw.is_one_time ?? raw.one_time),
     viewed: Boolean(raw.is_read ?? raw.read ?? raw.viewed),
+    replyTo,
+    forwarded,
+    forwardedFrom,
   };
 }
 
