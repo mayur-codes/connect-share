@@ -11,6 +11,20 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    proxy: {
+      "/api": {
+        target: "https://api.odnix.org",
+        changeOrigin: true,
+        secure: true,
+        // Do NOT rewrite — backend expects /api/... paths.
+      },
+      "/ws": {
+        target: "wss://api.odnix.org",
+        ws: true,
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
