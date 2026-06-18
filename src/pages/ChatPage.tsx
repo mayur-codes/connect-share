@@ -22,6 +22,7 @@ export default function ChatPage() {
   const me = useAuthStore((s) => s.user);
   const [message, setMessage] = useState('');
   const [isOneTimeView, setIsOneTimeView] = useState(false);
+  const [replyTarget, setReplyTarget] = useState<Message | null>(null);
   const [liveMessages, setLiveMessages] = useState<Message[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
