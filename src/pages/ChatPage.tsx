@@ -60,9 +60,10 @@ export default function ChatPage() {
   const sendMutation = useMutation({
     mutationFn: () => chatApi.sendMessage({
       chatId: chatId!, content: message.trim(), oneTime: isOneTimeView,
+      replyTo: replyTarget?.id,
     }),
     onSuccess: () => {
-      setMessage(''); setIsOneTimeView(false);
+      setMessage(''); setIsOneTimeView(false); setReplyTarget(null);
       queryClient.invalidateQueries({ queryKey: ['messages', chatId] });
     },
     onError: (err: any) => toast.error(err?.message || 'Failed to send'),
