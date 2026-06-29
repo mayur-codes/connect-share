@@ -46,7 +46,7 @@ export function OmzoPlayer({
 
   return (
     <div className="relative w-full h-full bg-background">
-      <video ref={videoRef} src={omzo.videoUrl} className="w-full h-full object-cover"
+      <video ref={videoRef} src={omzo.videoUrl} className="w-full h-full object-contain bg-black"
         loop muted playsInline onClick={() => setIsPaused((v) => !v)} />
 
       {isPaused && (

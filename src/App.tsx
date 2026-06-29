@@ -41,10 +41,10 @@ const App = () => (
               <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/explore" element={<ExplorePage />} />
+                <Route path="/omzo" element={<OmzoPage />} />
                 <Route path="/profile/:userId" element={<ProfilePage />} />
               </Route>
               <Route path="/chat/:chatId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
-              <Route path="/omzo" element={<ProtectedRoute><OmzoPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

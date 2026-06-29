@@ -22,11 +22,12 @@ export function MainLayout() {
   const user = useAuthStore((s) => s.user);
   const [uploadMenuOpen, setUploadMenuOpen] = useState(false);
 
-  const isFullScreen = location.pathname.startsWith('/chat/') || location.pathname === '/omzo';
+  const isFullScreen = location.pathname.startsWith('/chat/');
+  const hideHeader = isFullScreen || location.pathname === '/omzo';
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {!isFullScreen && (
+      {!hideHeader && (
         <motion.header initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
           className="sticky top-0 z-30 glass-card border-b border-border/50 safe-top">
           <div className="flex items-center justify-between px-4 py-3 max-w-6xl mx-auto">

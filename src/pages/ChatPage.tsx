@@ -7,6 +7,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Avatar } from '@/components/Avatar';
 import { MessageBubble } from '@/components/MessageBubble';
+import { ForwardMessageModal } from '@/components/ForwardMessageModal';
 import { cn } from '@/lib/utils';
 import * as chatApi from '@/services/chat';
 import { connectChat } from '@/services/sockets';
@@ -23,6 +24,7 @@ export default function ChatPage() {
   const [message, setMessage] = useState('');
   const [isOneTimeView, setIsOneTimeView] = useState(false);
   const [replyTarget, setReplyTarget] = useState<Message | null>(null);
+  const [forwardTarget, setForwardTarget] = useState<Message | null>(null);
   const [liveMessages, setLiveMessages] = useState<Message[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -140,7 +142,8 @@ export default function ChatPage() {
           <p className="text-center text-destructive text-sm">Failed to load messages</p>
         )}
         {messages.map((m) => (
-          <MessageBubble key={m.id} message={m} isOwn={m.senderId === 'me'} onReply={setReplyTarget} />
+          <MessageBubble key={m.id} message={m} isOwn={m.senderId === 'me'}
+            onReply={setReplyTarget} onForward={setForwardTarget} />
         ))}
       </div>
 
@@ -192,6 +195,8 @@ export default function ChatPage() {
           </motion.button>
         </div>
       </motion.div>
+
+      <ForwardMessageModal open={!!forwardTarget} onClose={() => setForwardTarget(null)} message={forwardTarget} />
     </div>
   );
 }

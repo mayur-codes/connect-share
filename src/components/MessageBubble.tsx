@@ -1,12 +1,13 @@
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { Check, CheckCheck, Lock, CornerUpLeft, CornerUpRight, Image as ImageIcon, Film, FileText, Reply } from 'lucide-react';
+import { Check, CheckCheck, Lock, CornerUpLeft, CornerUpRight, Image as ImageIcon, Film, FileText, Reply, Forward } from 'lucide-react';
 import type { Message } from '@/services/api';
 
 interface MessageBubbleProps {
   message: Message;
   isOwn: boolean;
   onReply?: (message: Message) => void;
+  onForward?: (message: Message) => void;
 }
 
 function ReplyPreview({ reply, isOwn }: { reply: NonNullable<Message['replyTo']>; isOwn: boolean }) {
@@ -45,8 +46,33 @@ function ReplyPreview({ reply, isOwn }: { reply: NonNullable<Message['replyTo']>
   );
 }
 
-export function MessageBubble({ message, isOwn, onReply }: MessageBubbleProps) {
+export function MessageBubble({ message, isOwn, onReply, onForward }: MessageBubbleProps) {
   const isMedia = message.type === 'image' || message.type === 'video';
+
+  const actions = (
+    <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+      {onReply && (
+        <button
+          onClick={() => onReply(message)}
+          className="p-1.5 rounded-full hover:bg-secondary"
+          aria-label="Reply"
+          title="Reply"
+        >
+          {isOwn ? <Reply className="w-4 h-4 text-muted-foreground" /> : <CornerUpLeft className="w-4 h-4 text-muted-foreground" />}
+        </button>
+      )}
+      {onForward && (
+        <button
+          onClick={() => onForward(message)}
+          className="p-1.5 rounded-full hover:bg-secondary"
+          aria-label="Forward"
+          title="Forward"
+        >
+          <Forward className="w-4 h-4 text-muted-foreground" />
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <motion.div
@@ -54,15 +80,7 @@ export function MessageBubble({ message, isOwn, onReply }: MessageBubbleProps) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       className={cn('group flex items-center gap-2 mb-2', isOwn ? 'justify-end' : 'justify-start')}
     >
-      {isOwn && onReply && (
-        <button
-          onClick={() => onReply(message)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-secondary"
-          aria-label="Reply"
-        >
-          <Reply className="w-4 h-4 text-muted-foreground" />
-        </button>
-      )}
+      {isOwn && actions}
 
       <div
         className={cn(
@@ -114,15 +132,7 @@ export function MessageBubble({ message, isOwn, onReply }: MessageBubbleProps) {
         </div>
       </div>
 
-      {!isOwn && onReply && (
-        <button
-          onClick={() => onReply(message)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-secondary"
-          aria-label="Reply"
-        >
-          <CornerUpLeft className="w-4 h-4 text-muted-foreground" />
-        </button>
-      )}
+      {!isOwn && actions}
     </motion.div>
   );
 }
