@@ -80,15 +80,7 @@ export function MessageBubble({ message, isOwn, onReply, onForward }: MessageBub
       animate={{ opacity: 1, y: 0, scale: 1 }}
       className={cn('group flex items-center gap-2 mb-2', isOwn ? 'justify-end' : 'justify-start')}
     >
-      {isOwn && onReply && (
-        <button
-          onClick={() => onReply(message)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-secondary"
-          aria-label="Reply"
-        >
-          <Reply className="w-4 h-4 text-muted-foreground" />
-        </button>
-      )}
+      {isOwn && actions}
 
       <div
         className={cn(
