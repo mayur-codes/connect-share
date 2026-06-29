@@ -70,7 +70,7 @@ export default function HomePage() {
         <section>
           <div className="sticky top-0 bg-background/80 backdrop-blur-lg z-10 border-b border-border/50">
             <div className="flex p-2 gap-2">
-              {(['all', 'private'] as const).map((tab) => (
+              {(['general', 'private'] as const).map((tab) => (
                 <button key={tab} onClick={() => setActiveTab(tab)}
                   className={cn(
                     'flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all',
@@ -79,7 +79,7 @@ export default function HomePage() {
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                   )}
                 >
-                  {tab === 'all' ? 'All' : 'Private'}
+                  {tab === 'general' ? 'General' : 'Private'}
                 </button>
               ))}
             </div>
