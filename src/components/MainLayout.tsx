@@ -27,7 +27,7 @@ export function MainLayout() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {!isFullScreen && (
+      {!hideHeader && (
         <motion.header initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
           className="sticky top-0 z-30 glass-card border-b border-border/50 safe-top">
           <div className="flex items-center justify-between px-4 py-3 max-w-6xl mx-auto">
