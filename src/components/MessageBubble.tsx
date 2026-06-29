@@ -1,12 +1,13 @@
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { Check, CheckCheck, Lock, CornerUpLeft, CornerUpRight, Image as ImageIcon, Film, FileText, Reply } from 'lucide-react';
+import { Check, CheckCheck, Lock, CornerUpLeft, CornerUpRight, Image as ImageIcon, Film, FileText, Reply, Forward } from 'lucide-react';
 import type { Message } from '@/services/api';
 
 interface MessageBubbleProps {
   message: Message;
   isOwn: boolean;
   onReply?: (message: Message) => void;
+  onForward?: (message: Message) => void;
 }
 
 function ReplyPreview({ reply, isOwn }: { reply: NonNullable<Message['replyTo']>; isOwn: boolean }) {
