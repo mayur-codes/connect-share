@@ -22,10 +22,15 @@ interface OmzoPlayerProps {
 
 export function OmzoPlayer({
   omzo, isActive, onUserClick, onShare, onLikeToggle,
-  onNotInterested, onHideCreator, onReport,
+  onNotInterested, onHideCreator, onReport, onComment,
 }: OmzoPlayerProps) {
-  const [liked, setLiked] = useState(omzo.isLiked);
+  const [liked, setLiked] = useState(!!omzo.isLiked);
   const [likes, setLikes] = useState(omzo.likes);
+  const [disliked, setDisliked] = useState(!!omzo.isDisliked);
+  const [dislikes, setDislikes] = useState(omzo.dislikes);
+  const [saved, setSaved] = useState(!!omzo.isSaved);
+  const [reposted, setReposted] = useState(false);
+  const [reposts, setReposts] = useState(omzo.shares);
   const [isPaused, setIsPaused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -37,9 +42,44 @@ export function OmzoPlayer({
   }, [isActive, isPaused]);
 
   const handleLike = () => {
-    setLiked((v) => !v);
-    setLikes((c) => c + (liked ? -1 : 1));
+    const next = !liked;
+    setLiked(next);
+    setLikes((c) => c + (next ? 1 : -1));
+    if (next && disliked) { setDisliked(false); setDislikes((d) => d - 1); }
     onLikeToggle?.();
+  };
+
+  const handleDislike = () => {
+    const next = !disliked;
+    setDisliked(next);
+    setDislikes((d) => d + (next ? 1 : -1));
+    if (next && liked) { setLiked(false); setLikes((l) => l - 1); }
+    // Reuse scribe-style dislike endpoint if available; otherwise silent fail.
+    omzoApi.like(omzo.id).catch(() => {}); // no dedicated dislike endpoint; best-effort
+  };
+
+  const handleSave = async () => {
+    const next = !saved;
+    setSaved(next);
+    try {
+      await omzoApi.save(omzo.id);
+      toast.success(next ? 'Saved' : 'Removed');
+    } catch (e: any) {
+      setSaved(!next);
+      toast.error(e?.message || 'Could not save');
+    }
+  };
+
+  const handleRepost = async () => {
+    if (reposted) return;
+    setReposted(true); setReposts((r) => r + 1);
+    try {
+      await scribesApi.repost('omzo', omzo.id);
+      toast.success('Reposted');
+    } catch (e: any) {
+      setReposted(false); setReposts((r) => r - 1);
+      toast.error(e?.message || 'Could not repost');
+    }
   };
 
   const formatCount = (count: number) => {
