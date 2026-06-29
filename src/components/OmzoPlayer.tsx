@@ -1,9 +1,12 @@
 import { Avatar } from './Avatar';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { Heart, Share2, MoreVertical, Music2, Flag, EyeOff, UserX } from 'lucide-react';
+import { Heart, ThumbsDown, MessageCircle, Repeat2, Share2, MoreVertical, Music2, Flag, EyeOff, UserX, Bookmark } from 'lucide-react';
 import type { Omzo } from '@/services/api';
 import { useState, useRef, useEffect } from 'react';
+import * as omzoApi from '@/services/omzo';
+import * as scribesApi from '@/services/scribes';
+import { toast } from 'sonner';
 
 interface OmzoPlayerProps {
   omzo: Omzo;
@@ -14,6 +17,7 @@ interface OmzoPlayerProps {
   onNotInterested?: () => void;
   onHideCreator?: () => void;
   onReport?: () => void;
+  onComment?: () => void;
 }
 
 export function OmzoPlayer({
