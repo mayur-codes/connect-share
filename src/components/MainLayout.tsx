@@ -22,7 +22,8 @@ export function MainLayout() {
   const user = useAuthStore((s) => s.user);
   const [uploadMenuOpen, setUploadMenuOpen] = useState(false);
 
-  const isFullScreen = location.pathname.startsWith('/chat/') || location.pathname === '/omzo';
+  const isFullScreen = location.pathname.startsWith('/chat/');
+  const hideHeader = isFullScreen || location.pathname === '/omzo';
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
