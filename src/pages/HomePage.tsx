@@ -15,7 +15,7 @@ import { useAppStore } from '@/stores/appStore';
 import { CreateStoryModal } from '@/components/CreateStoryModal';
 import type { Story } from '@/services/api';
 
-type ChatTab = 'all' | 'private';
+type ChatTab = 'general' | 'private';
 
 export default function HomePage() {
   const navigate = useNavigate();
