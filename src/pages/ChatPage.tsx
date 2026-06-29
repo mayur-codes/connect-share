@@ -142,7 +142,8 @@ export default function ChatPage() {
           <p className="text-center text-destructive text-sm">Failed to load messages</p>
         )}
         {messages.map((m) => (
-          <MessageBubble key={m.id} message={m} isOwn={m.senderId === 'me'} onReply={setReplyTarget} />
+          <MessageBubble key={m.id} message={m} isOwn={m.senderId === 'me'}
+            onReply={setReplyTarget} onForward={setForwardTarget} />
         ))}
       </div>
 
