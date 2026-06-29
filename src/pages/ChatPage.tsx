@@ -7,6 +7,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Avatar } from '@/components/Avatar';
 import { MessageBubble } from '@/components/MessageBubble';
+import { ForwardMessageModal } from '@/components/ForwardMessageModal';
 import { cn } from '@/lib/utils';
 import * as chatApi from '@/services/chat';
 import { connectChat } from '@/services/sockets';
