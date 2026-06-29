@@ -195,6 +195,8 @@ export default function ChatPage() {
           </motion.button>
         </div>
       </motion.div>
+
+      <ForwardMessageModal open={!!forwardTarget} onClose={() => setForwardTarget(null)} message={forwardTarget} />
     </div>
   );
 }
