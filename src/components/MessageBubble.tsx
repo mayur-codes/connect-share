@@ -104,13 +104,6 @@ export function MessageBubble({ message, isOwn, onReply, onForward }: MessageBub
             </span>
           </div>
         )}
-            'flex items-center gap-1 mb-1 text-[11px] italic',
-            isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground',
-          )}>
-            <CornerUpRight className="w-3 h-3" />
-            <span>Forwarded{message.forwardedFrom ? ` from ${message.forwardedFrom}` : ''}</span>
-          </div>
-        )}
 
         {message.replyTo && <ReplyPreview reply={message.replyTo} isOwn={isOwn} />}
 
