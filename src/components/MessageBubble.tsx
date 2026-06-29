@@ -87,15 +87,21 @@ export function MessageBubble({ message, isOwn, onReply, onForward }: MessageBub
           'max-w-[75%] relative',
           isOwn ? 'message-sent' : 'message-received',
           isMedia && !message.replyTo && !message.forwarded ? 'p-1' : 'px-3 py-2',
+          message.forwarded && 'ring-1 ring-inset ring-primary/30',
         )}
       >
         {message.forwarded && (
           <div className={cn(
-            'flex items-center gap-1 mb-1 text-[11px] italic',
-            isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground',
+            'flex items-center gap-1.5 -mx-3 -mt-2 mb-2 px-3 py-1.5 rounded-t-2xl border-b',
+            isOwn
+              ? 'bg-primary-foreground/15 border-primary-foreground/20 text-primary-foreground/90'
+              : 'bg-primary/10 border-primary/20 text-primary',
+            isMedia && !message.replyTo && '-mx-1 -mt-1 rounded-t-xl',
           )}>
-            <CornerUpRight className="w-3 h-3" />
-            <span>Forwarded{message.forwardedFrom ? ` from ${message.forwardedFrom}` : ''}</span>
+            <CornerUpRight className="w-3.5 h-3.5" />
+            <span className="text-[11px] font-semibold uppercase tracking-wide">
+              Forwarded{message.forwardedFrom ? ` · from @${message.forwardedFrom}` : ''}
+            </span>
           </div>
         )}
 

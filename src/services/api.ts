@@ -76,6 +76,7 @@ export interface Omzo {
   likes: number;
   dislikes: number;
   shares: number;
+  comments: number;
   createdAt: Date;
   isLiked?: boolean;
   isDisliked?: boolean;

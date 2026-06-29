@@ -158,6 +158,7 @@ export function normalizeOmzo(raw: any): Omzo {
     likes: Number(raw.likes ?? 0),
     dislikes: Number(raw.dislikes ?? 0),
     shares: Number(raw.reposts ?? raw.shares ?? 0),
+    comments: Number(raw.comments_count ?? raw.comment_count ?? raw.comments ?? 0),
     createdAt: parseDate(raw.created_at),
     isLiked: Boolean(raw.is_liked),
     isDisliked: Boolean(raw.is_disliked),
