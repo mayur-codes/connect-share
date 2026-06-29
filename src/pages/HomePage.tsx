@@ -20,7 +20,7 @@ type ChatTab = 'general' | 'private';
 export default function HomePage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
-  const [activeTab, setActiveTab] = useState<ChatTab>('all');
+  const [activeTab, setActiveTab] = useState<ChatTab>('general');
   const [storyViewerOpen, setStoryViewerOpen] = useState(false);
   const [storyIndex, setStoryIndex] = useState(0);
   const [createStoryOpen, setCreateStoryOpen] = useState(false);
