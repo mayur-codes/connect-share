@@ -104,20 +104,51 @@ export function OmzoPlayer({
       <div className="absolute inset-0 omzo-gradient pointer-events-none" />
 
       {/* Right side actions */}
-      <div className="absolute right-3 bottom-32 flex flex-col items-center gap-5">
-        <motion.button whileTap={{ scale: 0.9 }} onClick={handleLike} className="flex flex-col items-center gap-1">
-          <div className={cn('w-12 h-12 rounded-full glass-button flex items-center justify-center',
+      <div className="absolute right-2 bottom-24 flex flex-col items-center gap-3 z-10">
+        <motion.button whileTap={{ scale: 0.9 }} onClick={handleLike} className="flex flex-col items-center gap-0.5">
+          <div className={cn('w-11 h-11 rounded-full glass-button flex items-center justify-center',
             liked && 'bg-destructive/20 border-destructive/50')}>
             <Heart className={cn('w-6 h-6', liked ? 'text-destructive fill-destructive' : 'text-white')} />
           </div>
-          <span className="text-xs text-white font-medium">{formatCount(likes)}</span>
+          <span className="text-[11px] text-white font-medium">{formatCount(likes)}</span>
         </motion.button>
 
-        <motion.button whileTap={{ scale: 0.9 }} onClick={onShare} className="flex flex-col items-center gap-1">
-          <div className="w-12 h-12 rounded-full glass-button flex items-center justify-center">
+        <motion.button whileTap={{ scale: 0.9 }} onClick={handleDislike} className="flex flex-col items-center gap-0.5">
+          <div className={cn('w-11 h-11 rounded-full glass-button flex items-center justify-center',
+            disliked && 'bg-primary/20 border-primary/50')}>
+            <ThumbsDown className={cn('w-6 h-6', disliked ? 'text-primary fill-primary' : 'text-white')} />
+          </div>
+          <span className="text-[11px] text-white font-medium">{formatCount(dislikes)}</span>
+        </motion.button>
+
+        <motion.button whileTap={{ scale: 0.9 }} onClick={() => (onComment ? onComment() : toast('Comments coming soon'))}
+          className="flex flex-col items-center gap-0.5">
+          <div className="w-11 h-11 rounded-full glass-button flex items-center justify-center">
+            <MessageCircle className="w-6 h-6 text-white" />
+          </div>
+          <span className="text-[11px] text-white font-medium">{formatCount(omzo.comments)}</span>
+        </motion.button>
+
+        <motion.button whileTap={{ scale: 0.9 }} onClick={handleRepost} className="flex flex-col items-center gap-0.5">
+          <div className={cn('w-11 h-11 rounded-full glass-button flex items-center justify-center',
+            reposted && 'bg-success/20 border-success/50')}>
+            <Repeat2 className={cn('w-6 h-6', reposted ? 'text-success' : 'text-white')} />
+          </div>
+          <span className="text-[11px] text-white font-medium">{formatCount(reposts)}</span>
+        </motion.button>
+
+        <motion.button whileTap={{ scale: 0.9 }} onClick={onShare} className="flex flex-col items-center gap-0.5">
+          <div className="w-11 h-11 rounded-full glass-button flex items-center justify-center">
             <Share2 className="w-6 h-6 text-white" />
           </div>
-          <span className="text-xs text-white font-medium">{formatCount(omzo.shares)}</span>
+          <span className="text-[11px] text-white font-medium">Share</span>
+        </motion.button>
+
+        <motion.button whileTap={{ scale: 0.9 }} onClick={handleSave} className="flex flex-col items-center gap-0.5">
+          <div className={cn('w-11 h-11 rounded-full glass-button flex items-center justify-center',
+            saved && 'bg-warning/20 border-warning/50')}>
+            <Bookmark className={cn('w-6 h-6', saved ? 'text-warning fill-warning' : 'text-white')} />
+          </div>
         </motion.button>
       </div>
 
