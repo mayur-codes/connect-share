@@ -132,15 +132,7 @@ export function MessageBubble({ message, isOwn, onReply, onForward }: MessageBub
         </div>
       </div>
 
-      {!isOwn && onReply && (
-        <button
-          onClick={() => onReply(message)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-secondary"
-          aria-label="Reply"
-        >
-          <CornerUpLeft className="w-4 h-4 text-muted-foreground" />
-        </button>
-      )}
+      {!isOwn && actions}
     </motion.div>
   );
 }
