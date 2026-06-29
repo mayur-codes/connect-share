@@ -34,7 +34,7 @@ export default function HomePage() {
     [storiesQuery.data]
   );
 
-  const filteredChats = (chatsQuery.data ?? []).filter((c) => (activeTab === 'all' ? true : c.isPrivate));
+  const filteredChats = (chatsQuery.data ?? []).filter((c) => (activeTab === 'general' ? !c.isPrivate : c.isPrivate));
 
   const openStory = (index: number) => { setStoryIndex(index); setStoryViewerOpen(true); };
 
