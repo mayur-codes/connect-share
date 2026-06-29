@@ -46,8 +46,33 @@ function ReplyPreview({ reply, isOwn }: { reply: NonNullable<Message['replyTo']>
   );
 }
 
-export function MessageBubble({ message, isOwn, onReply }: MessageBubbleProps) {
+export function MessageBubble({ message, isOwn, onReply, onForward }: MessageBubbleProps) {
   const isMedia = message.type === 'image' || message.type === 'video';
+
+  const actions = (
+    <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+      {onReply && (
+        <button
+          onClick={() => onReply(message)}
+          className="p-1.5 rounded-full hover:bg-secondary"
+          aria-label="Reply"
+          title="Reply"
+        >
+          {isOwn ? <Reply className="w-4 h-4 text-muted-foreground" /> : <CornerUpLeft className="w-4 h-4 text-muted-foreground" />}
+        </button>
+      )}
+      {onForward && (
+        <button
+          onClick={() => onForward(message)}
+          className="p-1.5 rounded-full hover:bg-secondary"
+          aria-label="Forward"
+          title="Forward"
+        >
+          <Forward className="w-4 h-4 text-muted-foreground" />
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <motion.div
