@@ -8,7 +8,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
 
 const schema = z.object({
-  username: z.string().trim().min(1, 'Username is required').max(64),
+  email: z.string().trim().email('Enter a valid email').max(255),
   password: z.string().min(1, 'Password is required').max(128),
 });
 
@@ -16,7 +16,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const setSession = useAuthStore((s) => s.setSession);
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,15 +26,14 @@ export default function LoginPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    const parsed = schema.safeParse({ username, password });
+    const parsed = schema.safeParse({ email, password });
     if (!parsed.success) { setError(parsed.error.issues[0].message); return; }
     setLoading(true);
     try {
-      const user = await login(parsed.data.username, parsed.data.password);
-      // Token was stored in apiClient; pull it back via store init.
+      const user = await login(parsed.data.email, parsed.data.password);
       const token = localStorage.getItem('odnix_auth_token') || '';
       setSession(token, user);
-      toast.success(`Welcome back, ${user.displayName || user.username}`);
+      toast.success(`Welcome back${user.displayName ? `, ${user.displayName}` : ''}`);
       navigate(from, { replace: true });
     } catch (err: any) {
       setError(err?.message || 'Login failed');
@@ -53,11 +52,12 @@ export default function LoginPage() {
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-muted-foreground">Username</label>
+            <label className="text-sm font-medium text-muted-foreground">Email</label>
             <input
-              autoComplete="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full mt-1 bg-secondary rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
