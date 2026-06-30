@@ -26,8 +26,6 @@ export function OmzoPlayer({
 }: OmzoPlayerProps) {
   const [liked, setLiked] = useState(!!omzo.isLiked);
   const [likes, setLikes] = useState(omzo.likes);
-  const [disliked, setDisliked] = useState(!!omzo.isDisliked);
-  const [dislikes, setDislikes] = useState(omzo.dislikes);
   const [saved, setSaved] = useState(!!omzo.isSaved);
   const [reposted, setReposted] = useState(false);
   const [reposts, setReposts] = useState(omzo.shares);
