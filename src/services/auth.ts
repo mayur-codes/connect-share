@@ -7,14 +7,17 @@ export interface LoginResponse {
   success: boolean;
   auth_token: string;
   user: any;
+  profile_completion_required?: boolean;
 }
 
-export async function login(username: string, password: string): Promise<User> {
+export async function login(email: string, password: string): Promise<User> {
   const res = await apiRequest<LoginResponse>('/api/login/', {
-    method: 'POST', body: { username, password }, auth: false,
+    method: 'POST', body: { email, password }, auth: false,
   });
   setToken(res.auth_token);
-  const user = normalizeUser(res.user);
+  const user = normalizeUser(res.user, {
+    profileCompletionRequired: res.profile_completion_required,
+  });
   try { localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user)); } catch {/* */}
   return user;
 }
@@ -23,25 +26,44 @@ export async function checkAvailability(payload: { username?: string; email?: st
   return apiRequest('/api/check-availability/', { method: 'POST', body: payload, auth: false });
 }
 
-export interface RegisterPayload {
-  username: string;
-  email: string;
-  password: string;
-  name: string;
-  lastname?: string;
-  phone_number?: string;
+export interface RegisterResponse {
+  success: boolean;
+  requires_otp?: boolean;
+  email?: string;
+  profile_completion_required?: boolean;
+  next_step?: string;
 }
 
-export async function register(payload: RegisterPayload) {
-  return apiRequest('/api/register/', { method: 'POST', body: payload, auth: false });
+export async function register(payload: { email: string; password: string }): Promise<RegisterResponse> {
+  return apiRequest<RegisterResponse>('/api/register/', {
+    method: 'POST', body: payload, auth: false,
+  });
+}
+
+export interface VerifyOtpResponse extends LoginResponse {
+  next_step?: string;
 }
 
 export async function verifyEmailOtp(email: string, otp: string): Promise<User> {
-  const res = await apiRequest<LoginResponse>('/api/verify-email-otp/', {
+  const res = await apiRequest<VerifyOtpResponse>('/api/verify-email-otp/', {
     method: 'POST', body: { email, otp }, auth: false,
   });
   if (res.auth_token) setToken(res.auth_token);
-  const user = normalizeUser(res.user);
+  const flag = res.profile_completion_required ?? (res.next_step === 'complete_profile');
+  const user = normalizeUser(res.user ?? { email }, { profileCompletionRequired: flag });
+  try { localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user)); } catch {/* */}
+  return user;
+}
+
+export async function completeProfile(payload: {
+  username: string;
+  first_name: string;
+  last_name: string;
+}): Promise<User> {
+  const res = await apiRequest<any>('/api/profile/', { method: 'POST', body: payload });
+  const flag = res?.profile_completion_required ?? false;
+  const userRaw = res?.user ?? res?.profile ?? { ...payload };
+  const user = normalizeUser(userRaw, { profileCompletionRequired: flag });
   try { localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user)); } catch {/* */}
   return user;
 }
@@ -72,7 +94,11 @@ export async function deleteAccount() {
 
 export async function getCurrentProfile(): Promise<User> {
   const raw = await apiRequest<any>('/api/profile/');
-  const user = normalizeUser(raw?.user ?? raw);
+  const flag =
+    raw?.profile_completion_required ??
+    raw?.user?.profile_completion_required ??
+    undefined;
+  const user = normalizeUser(raw?.user ?? raw, { profileCompletionRequired: flag });
   try { localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user)); } catch {/* */}
   return user;
 }
