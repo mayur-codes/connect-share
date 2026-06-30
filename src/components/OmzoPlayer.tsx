@@ -101,13 +101,6 @@ export function OmzoPlayer({
           <span className="text-[11px] text-white font-medium">{formatCount(likes)}</span>
         </motion.button>
 
-        <motion.button whileTap={{ scale: 0.9 }} onClick={handleDislike} className="flex flex-col items-center gap-0.5">
-          <div className={cn('w-11 h-11 rounded-full glass-button flex items-center justify-center',
-            disliked && 'bg-primary/20 border-primary/50')}>
-            <ThumbsDown className={cn('w-6 h-6', disliked ? 'text-primary fill-primary' : 'text-white')} />
-          </div>
-          <span className="text-[11px] text-white font-medium">{formatCount(dislikes)}</span>
-        </motion.button>
 
         <motion.button whileTap={{ scale: 0.9 }} onClick={() => (onComment ? onComment() : toast('Comments coming soon'))}
           className="flex flex-col items-center gap-0.5">
