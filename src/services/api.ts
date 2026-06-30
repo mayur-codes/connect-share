@@ -9,6 +9,8 @@ export interface User {
   avatar: string;
   isOnline: boolean;
   isVerified?: boolean;
+  email?: string;
+  profileCompletionRequired?: boolean;
 }
 
 export interface Story {
