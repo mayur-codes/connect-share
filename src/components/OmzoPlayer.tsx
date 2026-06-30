@@ -1,7 +1,7 @@
 import { Avatar } from './Avatar';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { Heart, ThumbsDown, MessageCircle, Repeat2, Share2, MoreVertical, Music2, Flag, EyeOff, UserX, Bookmark } from 'lucide-react';
+import { Heart, MessageCircle, Repeat2, Share2, MoreVertical, Music2, Flag, EyeOff, UserX, Bookmark } from 'lucide-react';
 import type { Omzo } from '@/services/api';
 import { useState, useRef, useEffect } from 'react';
 import * as omzoApi from '@/services/omzo';
