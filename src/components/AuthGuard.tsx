@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { setUnauthorizedHandler } from '@/services/apiClient';
+import { CompleteProfileModal } from './CompleteProfileModal';
 
 export function AuthBootstrap({ children }: { children: React.ReactNode }) {
   const { initialize, ready, logout } = useAuthStore();
@@ -21,7 +22,12 @@ export function AuthBootstrap({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <CompleteProfileModal />
+    </>
+  );
 }
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {

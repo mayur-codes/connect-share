@@ -7,7 +7,7 @@ function pickAvatar(o: any): string {
   );
 }
 
-export function normalizeUser(raw: any): User {
+export function normalizeUser(raw: any, extra?: { profileCompletionRequired?: boolean }): User {
   if (!raw) return {} as User;
   const id = String(raw.id ?? raw.user_id ?? raw.pk ?? '');
   const username = raw.username ?? raw.user_username ?? '';
@@ -19,9 +19,13 @@ export function normalizeUser(raw: any): User {
       raw.name ||
       [raw.first_name, raw.lastname || raw.last_name].filter(Boolean).join(' ').trim() ||
       username,
-    avatar: pickAvatar(raw) || `https://i.pravatar.cc/150?u=${username || id}`,
+    avatar: pickAvatar(raw) || `https://i.pravatar.cc/150?u=${username || id || 'anon'}`,
     isOnline: Boolean(raw.is_online),
     isVerified: Boolean(raw.is_verified),
+    email: raw.email ?? undefined,
+    profileCompletionRequired:
+      extra?.profileCompletionRequired ??
+      (raw.profile_completion_required != null ? Boolean(raw.profile_completion_required) : undefined),
   };
 }
 

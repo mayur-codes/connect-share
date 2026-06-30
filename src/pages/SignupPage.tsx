@@ -8,23 +8,22 @@ import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
 
 const schema = z.object({
-  username: z.string().trim().min(3).max(30),
-  email: z.string().trim().email(),
-  password: z.string().min(6).max(128),
-  name: z.string().trim().min(1).max(50),
-  lastname: z.string().trim().max(50).optional(),
+  email: z.string().trim().email('Enter a valid email').max(255),
+  password: z.string().min(6, 'Password must be at least 6 characters').max(128),
 });
 
 export default function SignupPage() {
   const navigate = useNavigate();
   const setSession = useAuthStore((s) => s.setSession);
   const [stage, setStage] = useState<'form' | 'otp'>('form');
-  const [form, setForm] = useState({ username: '', email: '', password: '', name: '', lastname: '' });
+  const [form, setForm] = useState({ email: '', password: '' });
   const [otp, setOtp] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  function update<K extends keyof typeof form>(k: K, v: string) { setForm((p) => ({ ...p, [k]: v })); }
+  function update<K extends keyof typeof form>(k: K, v: string) {
+    setForm((p) => ({ ...p, [k]: v }));
+  }
 
   async function onRegister(e: React.FormEvent) {
     e.preventDefault();
@@ -33,13 +32,7 @@ export default function SignupPage() {
     if (!parsed.success) { setError(parsed.error.issues[0].message); return; }
     setLoading(true);
     try {
-      await register({
-        username: form.username,
-        email: form.email,
-        password: form.password,
-        name: form.name,
-        lastname: form.lastname,
-      });
+      await register({ email: parsed.data.email, password: parsed.data.password });
       setStage('otp');
       toast.success('OTP sent to ' + parsed.data.email);
     } catch (err: any) { setError(err?.message || 'Registration failed'); }
@@ -55,7 +48,8 @@ export default function SignupPage() {
       const user = await verifyEmailOtp(form.email, otp);
       const token = localStorage.getItem('odnix_auth_token') || '';
       setSession(token, user);
-      toast.success('Account verified');
+      toast.success('Email verified');
+      // Global CompleteProfileModal will appear if profileCompletionRequired
       navigate('/', { replace: true });
     } catch (err: any) { setError(err?.message || 'Verification failed'); }
     finally { setLoading(false); }
@@ -70,26 +64,15 @@ export default function SignupPage() {
       >
         <h1 className="text-3xl font-bold gradient-text mb-1">Create account</h1>
         <p className="text-muted-foreground mb-6">
-          {stage === 'form' ? 'Join Odnix in seconds' : `Verify the code sent to ${form.email}`}
+          {stage === 'form' ? 'Sign up with your email' : `Verify the code sent to ${form.email}`}
         </p>
 
         {stage === 'form' ? (
           <form onSubmit={onRegister} className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <input placeholder="First name" value={form.name}
-                onChange={(e) => update('name', e.target.value)}
-                className="bg-secondary rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary" />
-              <input placeholder="Last name" value={form.lastname}
-                onChange={(e) => update('lastname', e.target.value)}
-                className="bg-secondary rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary" />
-            </div>
-            <input placeholder="Username" value={form.username}
-              onChange={(e) => update('username', e.target.value)}
-              className="w-full bg-secondary rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary" />
-            <input placeholder="Email" type="email" value={form.email}
+            <input placeholder="Email" type="email" autoComplete="email" value={form.email}
               onChange={(e) => update('email', e.target.value)}
               className="w-full bg-secondary rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary" />
-            <input placeholder="Password" type="password" value={form.password}
+            <input placeholder="Password" type="password" autoComplete="new-password" value={form.password}
               onChange={(e) => update('password', e.target.value)}
               className="w-full bg-secondary rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary" />
 
@@ -99,7 +82,7 @@ export default function SignupPage() {
               className="w-full py-3 rounded-xl font-medium text-primary-foreground glow-primary disabled:opacity-50 flex items-center justify-center gap-2"
               style={{ background: 'var(--gradient-primary)' }}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              Continue
+              Send verification code
             </button>
           </form>
         ) : (
@@ -112,7 +95,7 @@ export default function SignupPage() {
               className="w-full py-3 rounded-xl font-medium text-primary-foreground glow-primary disabled:opacity-50 flex items-center justify-center gap-2"
               style={{ background: 'var(--gradient-primary)' }}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              Verify and sign in
+              Verify and continue
             </button>
             <button type="button" onClick={() => setStage('form')}
               className="w-full py-2 text-sm text-muted-foreground hover:text-foreground">
