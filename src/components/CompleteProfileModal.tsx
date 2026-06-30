@@ -37,7 +37,11 @@ export function CompleteProfileModal() {
     if (!parsed.success) { setError(parsed.error.issues[0].message); return; }
     setLoading(true);
     try {
-      const updated = await completeProfile(parsed.data);
+      const updated = await completeProfile({
+        username: parsed.data.username,
+        first_name: parsed.data.first_name,
+        last_name: parsed.data.last_name,
+      });
       setUser(updated);
       toast.success('Profile completed');
     } catch (err: any) {
