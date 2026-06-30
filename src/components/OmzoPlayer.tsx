@@ -43,17 +43,7 @@ export function OmzoPlayer({
     const next = !liked;
     setLiked(next);
     setLikes((c) => c + (next ? 1 : -1));
-    if (next && disliked) { setDisliked(false); setDislikes((d) => d - 1); }
     onLikeToggle?.();
-  };
-
-  const handleDislike = () => {
-    const next = !disliked;
-    setDisliked(next);
-    setDislikes((d) => d + (next ? 1 : -1));
-    if (next && liked) { setLiked(false); setLikes((l) => l - 1); }
-    // Reuse scribe-style dislike endpoint if available; otherwise silent fail.
-    omzoApi.like(omzo.id).catch(() => {}); // no dedicated dislike endpoint; best-effort
   };
 
   const handleSave = async () => {
