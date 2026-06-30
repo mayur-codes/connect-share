@@ -73,3 +73,27 @@ export async function acceptDmRequest(chatId: string) {
 export async function declineDmRequest(chatId: string) {
   return apiRequest(`/api/dm-requests/${chatId}/decline/`, { method: 'POST' });
 }
+export async function listDmRequests(): Promise<Chat[]> {
+  const raw = await apiRequest<any>('/api/dm-requests/');
+  const list = raw?.requests ?? raw?.chats ?? raw?.results ?? raw ?? [];
+  return (list as any[]).map((r) => ({ ...normalizeChat(r), isNewRequest: true }));
+}
+export async function dmRequestsCount(): Promise<number> {
+  try {
+    const raw = await apiRequest<any>('/api/dm-requests/count/');
+    return Number(raw?.count ?? raw?.unread ?? 0);
+  } catch { return 0; }
+}
+export async function checkDmRequest(chatId: string) {
+  return apiRequest(`/api/dm-requests/${chatId}/check/`);
+}
+
+// Chat preferences (private/general)
+export async function togglePrivateChat(chatId: string) {
+  return apiRequest('/api/toggle-private-chat/', { method: 'POST', body: { chat_id: chatId } });
+}
+export async function updateChatPreference(chatId: string, isPrivate: boolean) {
+  return apiRequest('/api/update-chat-preference/', {
+    method: 'POST', body: { chat_id: chatId, is_private: isPrivate },
+  });
+}

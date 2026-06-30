@@ -15,7 +15,7 @@ import { useAppStore } from '@/stores/appStore';
 import { CreateStoryModal } from '@/components/CreateStoryModal';
 import type { Story } from '@/services/api';
 
-type ChatTab = 'general' | 'private';
+type ChatTab = 'general' | 'private' | 'requests';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -28,13 +28,20 @@ export default function HomePage() {
 
   const chatsQuery = useQuery({ queryKey: ['chats'], queryFn: chatApi.listChats });
   const storiesQuery = useQuery({ queryKey: ['following-stories'], queryFn: storiesApi.followingStories });
+  const requestsQuery = useQuery({ queryKey: ['dm-requests'], queryFn: chatApi.listDmRequests });
+  const requestsCountQuery = useQuery({ queryKey: ['dm-requests-count'], queryFn: chatApi.dmRequestsCount });
 
   const allStories: Story[] = useMemo(
     () => (storiesQuery.data ?? []).flatMap((g) => g.stories),
     [storiesQuery.data]
   );
 
-  const filteredChats = (chatsQuery.data ?? []).filter((c) => (activeTab === 'general' ? !c.isPrivate : c.isPrivate));
+  const filteredChats =
+    activeTab === 'requests'
+      ? (requestsQuery.data ?? [])
+      : (chatsQuery.data ?? []).filter((c) =>
+          activeTab === 'general' ? !c.isPrivate : c.isPrivate
+        );
 
   const openStory = (index: number) => { setStoryIndex(index); setStoryViewerOpen(true); };
 
@@ -70,16 +77,21 @@ export default function HomePage() {
         <section>
           <div className="sticky top-0 bg-background/80 backdrop-blur-lg z-10 border-b border-border/50">
             <div className="flex p-2 gap-2">
-              {(['general', 'private'] as const).map((tab) => (
+              {(['general', 'private', 'requests'] as const).map((tab) => (
                 <button key={tab} onClick={() => setActiveTab(tab)}
                   className={cn(
-                    'flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all',
+                    'flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all relative',
                     activeTab === tab
                       ? 'bg-primary text-primary-foreground glow-primary'
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                   )}
                 >
-                  {tab === 'general' ? 'General' : 'Private'}
+                  {tab === 'general' ? 'General' : tab === 'private' ? 'Private' : 'Requests'}
+                  {tab === 'requests' && (requestsCountQuery.data ?? 0) > 0 && (
+                    <span className="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] rounded-full bg-destructive text-destructive-foreground">
+                      {requestsCountQuery.data}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>

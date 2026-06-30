@@ -1,7 +1,7 @@
 import { Avatar } from './Avatar';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { Heart, ThumbsDown, MessageCircle, Repeat2, Share2, MoreVertical, Music2, Flag, EyeOff, UserX, Bookmark } from 'lucide-react';
+import { Heart, MessageCircle, Repeat2, Share2, MoreVertical, Music2, Flag, EyeOff, UserX, Bookmark } from 'lucide-react';
 import type { Omzo } from '@/services/api';
 import { useState, useRef, useEffect } from 'react';
 import * as omzoApi from '@/services/omzo';
@@ -26,8 +26,6 @@ export function OmzoPlayer({
 }: OmzoPlayerProps) {
   const [liked, setLiked] = useState(!!omzo.isLiked);
   const [likes, setLikes] = useState(omzo.likes);
-  const [disliked, setDisliked] = useState(!!omzo.isDisliked);
-  const [dislikes, setDislikes] = useState(omzo.dislikes);
   const [saved, setSaved] = useState(!!omzo.isSaved);
   const [reposted, setReposted] = useState(false);
   const [reposts, setReposts] = useState(omzo.shares);
@@ -45,17 +43,7 @@ export function OmzoPlayer({
     const next = !liked;
     setLiked(next);
     setLikes((c) => c + (next ? 1 : -1));
-    if (next && disliked) { setDisliked(false); setDislikes((d) => d - 1); }
     onLikeToggle?.();
-  };
-
-  const handleDislike = () => {
-    const next = !disliked;
-    setDisliked(next);
-    setDislikes((d) => d + (next ? 1 : -1));
-    if (next && liked) { setLiked(false); setLikes((l) => l - 1); }
-    // Reuse scribe-style dislike endpoint if available; otherwise silent fail.
-    omzoApi.like(omzo.id).catch(() => {}); // no dedicated dislike endpoint; best-effort
   };
 
   const handleSave = async () => {
@@ -113,13 +101,6 @@ export function OmzoPlayer({
           <span className="text-[11px] text-white font-medium">{formatCount(likes)}</span>
         </motion.button>
 
-        <motion.button whileTap={{ scale: 0.9 }} onClick={handleDislike} className="flex flex-col items-center gap-0.5">
-          <div className={cn('w-11 h-11 rounded-full glass-button flex items-center justify-center',
-            disliked && 'bg-primary/20 border-primary/50')}>
-            <ThumbsDown className={cn('w-6 h-6', disliked ? 'text-primary fill-primary' : 'text-white')} />
-          </div>
-          <span className="text-[11px] text-white font-medium">{formatCount(dislikes)}</span>
-        </motion.button>
 
         <motion.button whileTap={{ scale: 0.9 }} onClick={() => (onComment ? onComment() : toast('Comments coming soon'))}
           className="flex flex-col items-center gap-0.5">
