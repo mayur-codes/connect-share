@@ -22,10 +22,14 @@ export function ForwardMessageModal({ open, onClose, message }: ForwardMessageMo
   const forwardMutation = useMutation({
     mutationFn: async () => {
       if (!message) return;
-      const content = message.type === 'text' ? message.content : message.content;
+      const content = message.type === 'text' ? message.content : '';
       await Promise.all(
         selected.map((chatId) =>
-          chatApi.sendMessage({ chatId, content, replyTo: undefined }).catch((e) => { throw e; })
+          chatApi.sendMessage({
+            chatId,
+            content,
+            forwardedFromId: message.id,
+          })
         )
       );
     },
