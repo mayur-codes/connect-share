@@ -42,6 +42,7 @@ export async function sendMessage(input: {
   media?: File;
   oneTime?: boolean;
   replyTo?: string;
+  forwardedFromId?: string;
   sharedScribeId?: string;
   sharedOmzoId?: string;
 }) {
@@ -51,9 +52,15 @@ export async function sendMessage(input: {
   if (input.media) form.append('media', input.media);
   if (input.oneTime) form.append('one_time', 'true');
   if (input.replyTo) form.append('reply_to', input.replyTo);
+  if (input.forwardedFromId) {
+    // Backend accepts either name depending on endpoint version.
+    form.append('forwarded_from_id', input.forwardedFromId);
+    form.append('forward_message_id', input.forwardedFromId);
+    form.append('is_forwarded', 'true');
+  }
   if (input.sharedScribeId) form.append('shared_scribe_id', input.sharedScribeId);
   if (input.sharedOmzoId) form.append('shared_omzo_id', input.sharedOmzoId);
-  return apiRequest('/api/send-message/', { method: 'POST', form });
+  return apiRequest<any>('/api/send-message/', { method: 'POST', form });
 }
 
 export async function markChatRead(chatId: string) {
