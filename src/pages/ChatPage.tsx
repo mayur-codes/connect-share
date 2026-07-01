@@ -99,7 +99,14 @@ export default function ChatPage() {
 
   const handleSend = () => {
     if (!message.trim() || sendMutation.isPending) return;
-    sendMutation.mutate();
+    sendMutation.mutate({ content: message.trim() });
+  };
+
+  const handlePickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    sendMutation.mutate({ media: file, content: message.trim() || undefined });
   };
 
   return (
