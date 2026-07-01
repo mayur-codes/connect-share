@@ -59,14 +59,26 @@ export default function ChatPage() {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messagesQuery.data, liveMessages]);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const sendMutation = useMutation({
-    mutationFn: () => chatApi.sendMessage({
-      chatId: chatId!, content: message.trim(), oneTime: isOneTimeView,
+    mutationFn: (payload: { content?: string; media?: File }) => chatApi.sendMessage({
+      chatId: chatId!,
+      content: payload.content,
+      media: payload.media,
+      oneTime: isOneTimeView,
       replyTo: replyTarget?.id,
     }),
-    onSuccess: () => {
+    onSuccess: (res: any) => {
       setMessage(''); setIsOneTimeView(false); setReplyTarget(null);
+      // Optimistic append using returned message so user sees it immediately.
+      const raw = res?.message ?? res?.data ?? res;
+      if (raw && (raw.id || raw.message_id) && me) {
+        const m = normalizeMessage(raw, me.id);
+        setLiveMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
+      }
       queryClient.invalidateQueries({ queryKey: ['messages', chatId] });
+      queryClient.invalidateQueries({ queryKey: ['chats'] });
     },
     onError: (err: any) => toast.error(err?.message || 'Failed to send'),
   });
