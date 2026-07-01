@@ -192,8 +192,11 @@ export default function ChatPage() {
           </motion.div>
         )}
         <div className="flex items-end gap-2">
-          <button className="p-2.5 hover:bg-secondary rounded-xl"><ImageIcon className="w-5 h-5 text-muted-foreground" /></button>
-          <button className="p-2.5 hover:bg-secondary rounded-xl"><Share2 className="w-5 h-5 text-muted-foreground" /></button>
+          <input ref={fileInputRef} type="file" accept="image/*,video/*" hidden onChange={handlePickFile} />
+          <button onClick={() => fileInputRef.current?.click()} className="p-2.5 hover:bg-secondary rounded-xl" aria-label="Attach media">
+            <ImageIcon className="w-5 h-5 text-muted-foreground" />
+          </button>
+          <button className="p-2.5 hover:bg-secondary rounded-xl" aria-label="Share"><Share2 className="w-5 h-5 text-muted-foreground" /></button>
           <button onClick={() => setIsOneTimeView(!isOneTimeView)}
             className={cn('p-2.5 rounded-xl',
               isOneTimeView ? 'bg-warning/20 text-warning' : 'hover:bg-secondary text-muted-foreground')}>
